@@ -1,0 +1,47 @@
+# pull official base image
+FROM python:3.13.3-slim-bookworm
+
+# create directory for the app user
+RUN mkdir -p /home/app
+
+# create the app user
+RUN addgroup --system app && adduser --system --group app
+
+# create the appropriate directories
+ENV HOME=/home/app
+ENV APP_HOME=/home/app/web
+RUN mkdir $APP_HOME
+WORKDIR $APP_HOME
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV ENVIRONMENT=prod
+ENV TESTING=0
+
+# install system dependencies
+RUN apt-get update \
+  && apt-get -y install netcat-traditional gcc postgresql \
+  && apt-get clean
+
+# install python dependencies
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# install python dependencies
+# Copy dependency files first for better Docker layer caching
+COPY ./pyproject.toml ./uv.lock* ./
+# Install dependencies to system Python (official uv Docker approach)
+# uv pip install automatically respects uv.lock when available
+RUN uv pip install --system .
+
+# add app
+COPY . .
+
+# chown all the files to the app user
+RUN chown -R app:app $APP_HOME
+
+# change to the app user
+USER app
+
+# run gunicorn (installed in system Python, no venv needed)
+CMD gunicorn --bind 0.0.0.0:${PORT} app.main:kek -k uvicorn.workers.UvicornWorker
