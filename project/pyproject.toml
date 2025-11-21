@@ -1,3 +1,19 @@
+[project]
+name = "fastapi-tdd-docker"
+version = "0.1.0"
+description = "FastAPI application with TDD and Docker"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi==0.115.12",
+    "pydantic-settings==2.8.1",
+    "uvicorn==0.34.1",
+    "asyncpg==0.30.0",
+    "tortoise-orm==0.25.0",
+    "aerich[toml]==0.8.2",
+    "httpx==0.28.1",
+    "pytest==8.3.5",
+]
+
 [tool.aerich]
 tortoise_orm = "app.db.TORTOISE_ORM"
 location = "./migrations"

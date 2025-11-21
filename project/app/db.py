@@ -20,9 +20,14 @@ TORTOISE_ORM = {
 
 
 def init_db(app: FastAPI) -> None:
+    db_url = os.environ.get("DATABASE_URL")
+    if not db_url:
+        log.warning("DATABASE_URL not set, skipping database initialization")
+        return
+    
     register_tortoise(
         app,
-        db_url=os.environ.get("DATABASE_URL"),
+        db_url=db_url,
         modules={"models": ["app.models.tortoise"]},
         generate_schemas=False,
         add_exception_handlers=True,

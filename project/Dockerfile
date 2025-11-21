@@ -13,10 +13,13 @@ RUN apt-get update \
   && apt-get -y install netcat-traditional gcc postgresql \
   && apt-get clean
 
+# install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 # install python dependencies
-RUN pip install --upgrade pip
-COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+# Copy dependency files first for better Docker layer caching
+COPY ./pyproject.toml ./uv.lock* ./
+RUN uv sync --system --frozen --no-dev
 
 # add app
 COPY . .
