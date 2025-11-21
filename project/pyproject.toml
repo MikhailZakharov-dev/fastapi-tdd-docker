@@ -18,3 +18,14 @@ dependencies = [
 tortoise_orm = "app.db.TORTOISE_ORM"
 location = "./migrations"
 src_folder = "./."
+
+[tool.ruff]
+exclude = ["migrations"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.6",
+]
