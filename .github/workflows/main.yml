@@ -8,7 +8,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[A-Z]' '[a-z]')/summarizer
+  IMAGE: ghcr.io/${{ github.repository_owner }}/fastapi-tdd-docker/summarizer
   
 
 jobs:
@@ -22,9 +22,11 @@ jobs:
         with:
           ref: main
       - name: Log in to GitHub Packages
-        run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin ghcr.io
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: docker/login-action@v2
+        with: 
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }} 
       - name: Pull image
         run: |
           docker pull ${{ env.IMAGE }}:latest || true
@@ -49,7 +51,11 @@ jobs:
         with:
           ref: main
       - name: Log in to GitHub Packages
-        run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin ghcr.io
+        uses: docker/login-action@v2
+        with: 
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull image
