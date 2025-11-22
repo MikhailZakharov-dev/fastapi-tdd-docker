@@ -1,5 +1,7 @@
 # FastAPI TDD Docker
 
+![CI/CD](https://github.com/MikhailZakharov-dev/fastapi-tdd-docker/actions/workflows/main.yml/badge.svg?branch=main)
+
 A FastAPI application built with Test-Driven Development (TDD) principles, containerized with Docker and Docker Compose.
 
 ## Features
