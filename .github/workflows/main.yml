@@ -29,6 +29,8 @@ jobs:
             --cache-from ${{ env.IMAGE }}:latest \
             --tag ${{ env.IMAGE }}:latest \
             --file ./project/Dockerfile.prod \
+            --build-arg GIT_COMMIT_SHA=${{ github.sha }} \
+            --build-arg BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
             "./project"
       - name: Push image
         run: |
@@ -56,6 +58,8 @@ jobs:
             --cache-from ${{ env.IMAGE }}:latest \
             --tag ${{ env.IMAGE }}:latest \
             --file ./project/Dockerfile.prod \
+            --build-arg GIT_COMMIT_SHA=${{ github.sha }} \
+            --build-arg BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
             "./project"
       - name: Run container
         run: |
@@ -100,6 +104,8 @@ jobs:
             --cache-from ${{ env.IMAGE }}:latest \
             --tag ${{ env.HEROKU_REGISTRY_IMAGE }}:latest \
             --file ./project/Dockerfile.prod \
+            --build-arg GIT_COMMIT_SHA=${{ github.sha }} \
+            --build-arg BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
             "./project"
       - name: Log in to the Heroku Container Registry
         run: docker login -u _ -p ${HEROKU_AUTH_TOKEN} registry.heroku.com
