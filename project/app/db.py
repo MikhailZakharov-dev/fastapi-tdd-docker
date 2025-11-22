@@ -1,8 +1,7 @@
-
 from fastapi import FastAPI
 import os
 from tortoise.contrib.fastapi import register_tortoise
-from tortoise import Tortoise, run_async  
+from tortoise import Tortoise, run_async
 import logging
 
 log = logging.getLogger("uvicorn")
@@ -18,13 +17,12 @@ TORTOISE_ORM = {
 }
 
 
-
 def init_db(app: FastAPI) -> None:
     db_url = os.environ.get("DATABASE_URL")
     if not db_url:
         log.warning("DATABASE_URL not set, skipping database initialization")
         return
-    
+
     register_tortoise(
         app,
         db_url=db_url,
@@ -32,18 +30,21 @@ def init_db(app: FastAPI) -> None:
         generate_schemas=False,
         add_exception_handlers=True,
     )
-    
+
+
 async def generate_schema() -> None:
     log.info("Initializing Tortoise...")
-    
-    await Tortoise.init(db_url=os.environ.get("DATABASE_URL"), modules={"models": ["models.tortoise"]})
-    
+
+    await Tortoise.init(
+        db_url=os.environ.get("DATABASE_URL"), modules={"models": ["models.tortoise"]}
+    )
+
     log.info("Generating database schema via Tortoise...")
-    
+
     await Tortoise.generate_schemas()
-    
+
     await Tortoise.close_connections()
-    
-    
+
+
 if __name__ == "__main__":
     run_async(generate_schema())
