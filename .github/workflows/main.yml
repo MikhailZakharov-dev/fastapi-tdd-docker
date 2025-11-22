@@ -2,10 +2,9 @@ name: Continuous Integration and Delivery
 
 on: [push]
 
-
-permissions:
-  contents: read
-  packages: write
+env:
+  IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[A-Z]' '[a-z]')/summarizer
+  
 
 jobs:
 
@@ -17,28 +16,23 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: main
-      - name: Set image name
-        run: |
-          echo "IMAGE=ghcr.io/$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/fastapi-tdd-docker/summarizer" >> $GITHUB_ENV
       - name: Log in to GitHub Packages
-        uses: docker/login-action@v2
-        with: 
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }} 
+        run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin ghcr.io
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull image
         run: |
-          docker pull ${IMAGE}:latest || true
+          docker pull ${{ env.IMAGE }}:latest || true
       - name: Build image
         run: |
           docker build \
-            --cache-from ${IMAGE}:latest \
-            --tag ${IMAGE}:latest \
+            --cache-from ${{ env.IMAGE }}:latest \
+            --tag ${{ env.IMAGE }}:latest \
             --file ./project/Dockerfile.prod \
             "./project"
       - name: Push image
         run: |
-          docker push ${IMAGE}:latest
+          docker push ${{ env.IMAGE }}:latest
 
   test:
     name: Test Docker Image
@@ -49,25 +43,18 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: main
-      - name: Set image name
-        run: |
-          echo "IMAGE=ghcr.io/$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/fastapi-tdd-docker/summarizer" >> $GITHUB_ENV
       - name: Log in to GitHub Packages
-        uses: docker/login-action@v2
-        with: 
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin ghcr.io
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull image
         run: |
-          docker pull ${IMAGE}:latest || true
+          docker pull ${{ env.IMAGE }}:latest || true
       - name: Build image
         run: |
           docker build \
-            --cache-from ${IMAGE}:latest \
-            --tag ${IMAGE}:latest \
+            --cache-from ${{ env.IMAGE }}:latest \
+            --tag ${{ env.IMAGE }}:latest \
             --file ./project/Dockerfile.prod \
             "./project"
       - name: Run container
@@ -80,8 +67,8 @@ jobs:
             -e DATABASE_URL=sqlite://sqlite.db \
             -e DATABASE_TEST_URL=sqlite://sqlite.db \
             -p 5003:8765 \
-            ${IMAGE}:latest
-      - name: Pytest
+            ${{ env.IMAGE }}:latest
+      - name: Run tests
         run: docker exec fastapi-tdd uv run pytest .
       - name: Ruff lint
         run: docker exec fastapi-tdd uv run ruff check .
