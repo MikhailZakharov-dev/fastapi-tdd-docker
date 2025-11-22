@@ -22,7 +22,18 @@ location = "./migrations"
 src_folder = "./."
 
 [tool.ruff]
-exclude = ["migrations"]
+exclude = [
+    "migrations",
+    ".env",
+    ".venv",
+    "venv",
+    "env",
+    "ENV",
+    "**/site-packages/**",
+    "__pycache__",
+    ".pytest_cache",
+    ".git",
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
