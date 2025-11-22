@@ -69,8 +69,8 @@ jobs:
             -p 5003:8765 \
             ${{ env.IMAGE }}:latest
       - name: Run tests
-        run: docker exec fastapi-tdd uv run pytest .
+        run: docker exec -e UV_NO_CACHE=1 fastapi-tdd uv run pytest .
       - name: Ruff lint
-        run: docker exec fastapi-tdd uv run ruff check .
+        run: docker exec -e UV_NO_CACHE=1 fastapi-tdd uv run ruff check .
       - name: Ruff format
-        run: docker exec fastapi-tdd uv run ruff format --check .
+        run: docker exec -e UV_NO_CACHE=1 fastapi-tdd uv run ruff format --check .
