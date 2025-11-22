@@ -17,4 +17,3 @@ async def get_version():
         "deployed_at": datetime.utcnow().isoformat() + "Z",
         "environment": os.environ.get("ENVIRONMENT", "unknown"),
     }
-
