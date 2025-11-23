@@ -11,10 +11,7 @@ dependencies = [
     "tortoise-orm==0.25.0",
     "aerich[toml]==0.8.2",
     "httpx==0.28.1",
-    "pytest==8.3.5",
     "gunicorn>=23.0.0",
-    "pytest-cov==6.1.1",
-    "pytest-xdist>=3.8.0",
     "lxml-html-clean>=0.4.3",
     "newspaper3k>=0.2.8",
 ]
@@ -50,4 +47,7 @@ known-first-party = ["app"]
 [dependency-groups]
 dev = [
     "ruff>=0.14.6",
+    "pytest==8.3.5",
+    "pytest-cov==6.1.1",
+    "pytest-xdist>=3.8.0",
 ]

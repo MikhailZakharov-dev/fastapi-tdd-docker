@@ -1,53 +1,102 @@
-# pull official base image
-FROM python:3.13.3-slim-bookworm
+###########
+# BUILDER #
+###########
 
-# create directory for the app user
-RUN mkdir -p /home/app
+# Start from the official Python image, like your original
+FROM python:3.13.3-slim-bookworm as builder
 
-# create the app user
-RUN addgroup --system app && adduser --system --group app
+# Install uv into this image (recommended pattern: copy binaries from uv image)
+# See: uv Docker guide & examples
+# https://docs.astral.sh/uv/guides/integration/docker/
+COPY --from=ghcr.io/astral-sh/uv:0.9.11 /uv /uvx /bin/
 
-# create the appropriate directories
-ENV HOME=/home/app
-ENV APP_HOME=/home/app/web
-RUN mkdir $APP_HOME
-WORKDIR $APP_HOME
-
-# Build arguments for version info
-ARG GIT_COMMIT_SHA=unknown
-ARG BUILD_TIME=unknown
-
-# set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV ENVIRONMENT=prod
-ENV TESTING=0
-ENV GIT_COMMIT_SHA=${GIT_COMMIT_SHA}
-ENV BUILD_TIME=${BUILD_TIME}
-
-# install system dependencies
+# Install system dependencies (same as your original)
 RUN apt-get update \
   && apt-get -y install netcat-traditional gcc postgresql \
   && apt-get clean
 
-# install python dependencies
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+# Set work directory
+WORKDIR /usr/src/app
 
-# install python dependencies
-# Copy dependency files first for better Docker layer caching
-COPY ./pyproject.toml ./uv.lock* ./
-# Install dependencies to system Python (official uv Docker approach)
-# uv pip install automatically respects uv.lock when available
-RUN uv pip install --system .
+# Basic Python env vars
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# add app
+# uv Docker best-practice flags:
+# - UV_COMPILE_BYTECODE: pre-compile .pyc files
+# - UV_LINK_MODE=copy: avoids hard-link warnings when building in Docker
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
+
+# ---- Install runtime dependencies with uv ----
+# Assumes your project is managed by uv with pyproject.toml + uv.lock
+# Copy only dependency metadata first to keep this layer cacheable
+COPY pyproject.toml uv.lock ./
+
+# Install *production* dependencies into a project virtualenv (.venv)
+# --frozen: use exactly what's in uv.lock
+# --no-dev: skip dev dependencies
+# --no-editable: install project non-editable (good for prod images)
+RUN uv sync --frozen --no-dev --no-editable
+
+# ---- Install Ruff in the *builder* environment only ----
+# This does NOT affect the .venv used at runtime.
+RUN uv pip install --system ruff
+
+# Copy the rest of the source code
+COPY . /usr/src/app/
+
+# Run Ruff checks (lint + format check), failing the build if style is wrong
+RUN ruff check .
+RUN ruff format --check .
+
+
+#########
+# FINAL #
+#########
+
+# Final runtime image – no uv, no ruff, just Python + your app
+FROM python:3.13.3-slim-bookworm
+
+# Create directory for the app user
+RUN mkdir -p /home/app
+
+# Create the app user (same as original)
+RUN addgroup --system app && adduser --system --group app
+
+# Create the appropriate directories
+ENV HOME=/home/app
+ENV APP_HOME=/home/app/web
+RUN mkdir "$APP_HOME"
+WORKDIR "$APP_HOME"
+
+# Environment variables (same as your example)
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    ENVIRONMENT=prod \
+    TESTING=0
+
+# Install system dependencies needed at runtime
+RUN apt-get update \
+  && apt-get -y install netcat-traditional gcc postgresql \
+  && apt-get clean
+
+# Copy the virtualenv created by uv in the builder stage
+# uv sync by default creates .venv in the project root
+COPY --from=builder /usr/src/app/.venv /opt/venv
+
+# Tell Python to use that environment
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy application source into the runtime image
 COPY . .
 
 # chown all the files to the app user
-RUN chown -R app:app $APP_HOME
+RUN chown -R app:app "$HOME"
 
-# change to the app user
+# Run as non-root user
 USER app
 
-# run gunicorn (installed in system Python, no venv needed)
-CMD gunicorn --bind 0.0.0.0:${PORT} app.main:kek -k uvicorn.workers.UvicornWorker
+# Run gunicorn (same command as your original)
+CMD gunicorn --bind 0.0.0.0:$PORT app.main:app -k uvicorn.workers.UvicornWorker

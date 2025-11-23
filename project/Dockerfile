@@ -16,10 +16,10 @@ RUN apt-get update \
 # install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# install python dependencies
+# install python dependencies (including dev dependencies)
 # Copy dependency files first for better Docker layer caching
 COPY ./pyproject.toml ./uv.lock* ./
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen
 
 # add app
 COPY . .
