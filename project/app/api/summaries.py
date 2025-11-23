@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Path, BackgroundTasks
+import logging
 
 from app.summarizer import generate_summary
 
@@ -12,6 +13,7 @@ from app.models.tortoise import SummarySchema
 from typing import List
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/", response_model=SummaryResponseSchema, status_code=201)
@@ -19,6 +21,7 @@ async def create_summary(
     payload: SummaryPayloadSchema, background_tasks: BackgroundTasks
 ) -> SummaryResponseSchema:
     summary_id = await crud.post(payload)
+    logger.info(f"Summary task created: ID={summary_id}, URL={payload.url}")
 
     background_tasks.add_task(generate_summary, summary_id, str(payload.url))
 
