@@ -1,7 +1,7 @@
 from datetime import datetime, UTC
 
 import pytest
-
+from app.api import summaries
 from app.api import crud
 
 
@@ -51,22 +51,19 @@ def test_update_summary_invalid_url(test_app):
     )
 
 
-def test_create_summary(test_app, monkeypatch):
-    test_request_payload = {"url": "https://foo.bar"}
-    test_response_payload = {"id": 1, "url": "https://foo.bar/"}
+def test_create_summary(test_app_with_db, monkeypatch):
+    def mock_generate_summary(summary_id, url):
+        return None
+        
+    monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
-    async def mock_post(payload):
-        return 1
-
-    monkeypatch.setattr(crud, "post", mock_post)
-
-    response = test_app.post(
-        "/summaries/",
-        json=test_request_payload,
+    response = test_app_with_db.post(
+        "/summaries/", json={"url": "https://foo.bar"}
     )
 
     assert response.status_code == 201
-    assert response.json() == test_response_payload
+    assert response.json()["url"] == "https://foo.bar/"
+
 
 
 def test_read_summary(test_app, monkeypatch):

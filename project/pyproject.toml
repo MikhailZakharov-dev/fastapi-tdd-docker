@@ -15,12 +15,20 @@ dependencies = [
     "gunicorn>=23.0.0",
     "pytest-cov==6.1.1",
     "pytest-xdist>=3.8.0",
+    "lxml-html-clean>=0.4.3",
+    "newspaper3k>=0.2.8",
 ]
 
 [tool.aerich]
 tortoise_orm = "app.db.TORTOISE_ORM"
 location = "./migrations"
 src_folder = "./."
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::SyntaxWarning",
+    "ignore:invalid escape sequence:SyntaxWarning",
+]
 
 [tool.ruff]
 exclude = [
