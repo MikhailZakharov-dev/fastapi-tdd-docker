@@ -94,8 +94,9 @@ ENV UV_COMPILE_BYTECODE=1 \
 # Install production dependencies using uv sync (creates .venv in current directory)
 RUN uv sync --frozen --no-dev --no-editable
 
-# Copy application source into the runtime image
-COPY . .
+# Set up the virtualenv in PATH (CRITICAL: without this, gunicorn won't be found)
+ENV VIRTUAL_ENV="$APP_HOME/.venv"
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # chown all the files to the app user
 RUN chown -R app:app "$HOME"
