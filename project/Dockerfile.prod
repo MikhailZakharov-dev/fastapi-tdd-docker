@@ -70,11 +70,17 @@ ENV APP_HOME=/home/app/web
 RUN mkdir "$APP_HOME"
 WORKDIR "$APP_HOME"
 
+# Accept build arguments for version information
+ARG GIT_COMMIT_SHA
+ARG BUILD_TIME
+
 # Environment variables (same as your example)
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     ENVIRONMENT=prod \
-    TESTING=0
+    TESTING=0 \
+    GIT_COMMIT_SHA=${GIT_COMMIT_SHA} \
+    BUILD_TIME=${BUILD_TIME}
 
 # Install system dependencies needed at runtime
 RUN apt-get update \
