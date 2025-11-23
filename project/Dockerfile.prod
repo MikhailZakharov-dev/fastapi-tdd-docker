@@ -90,6 +90,7 @@ COPY --from=builder /usr/src/app/pyproject.toml /usr/src/app/uv.lock ./
 # Copy application source code (needed for uv sync --no-editable to install the project)
 COPY --from=builder /usr/src/app/app ./app
 COPY --from=builder /usr/src/app/migrations ./migrations
+COPY --from=builder /usr/src/app/tests ./tests
 
 # Set uv environment variables
 ENV UV_COMPILE_BYTECODE=1 \
