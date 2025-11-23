@@ -30,7 +30,9 @@ async def generate_summary(summary_id: int, url: str) -> None:
             summary=f"Error: Could not process article - {str(e)}"
         )
     except Exception as e:
-        log.error(f"Error generating summary ID={summary_id}, URL={url}: {e}", exc_info=True)
+        log.error(
+            f"Error generating summary ID={summary_id}, URL={url}: {e}", exc_info=True
+        )
         await TextSummary.filter(id=summary_id).update(
             summary=f"Error: Failed to generate summary - {str(e)}"
         )

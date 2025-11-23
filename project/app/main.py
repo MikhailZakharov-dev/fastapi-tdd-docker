@@ -30,10 +30,15 @@ def create_application() -> FastAPI:
         try:
             response = await call_next(request)
             if response.status_code >= 500:
-                logger.error(f"Server error: {request.method} {request.url.path} - Status: {response.status_code}")
+                logger.error(
+                    f"Server error: {request.method} {request.url.path} - Status: {response.status_code}"
+                )
             return response
         except Exception as e:
-            logger.error(f"Request failed: {request.method} {request.url.path} - {str(e)}", exc_info=True)
+            logger.error(
+                f"Request failed: {request.method} {request.url.path} - {str(e)}",
+                exc_info=True,
+            )
             raise
 
     db_url = os.environ.get("DATABASE_URL")
@@ -53,7 +58,7 @@ def create_application() -> FastAPI:
     application.include_router(
         summaries.router, prefix="/summaries", tags=["summaries"]
     )
-    
+
     return application
 
 
