@@ -106,7 +106,7 @@ jobs:
 
       - name: Install dev dependencies
         run: |
-          docker exec fastapi-tdd pip install pytest==8.3.5 pytest-cov==6.1.1 "pytest-xdist>=3.8.0" "ruff>=0.14.6"
+          docker exec fastapi-tdd uv sync --frozen --dev
 
       - name: Run tests
         run: docker exec fastapi-tdd pytest .
