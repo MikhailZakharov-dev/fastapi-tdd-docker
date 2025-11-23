@@ -8,10 +8,13 @@ A FastAPI application built with Test-Driven Development (TDD) principles, conta
 
 - 🚀 FastAPI web framework
 - 🐘 PostgreSQL database with Tortoise ORM
-- 🧪 Pytest for testing
+- 🧪 Pytest for testing with coverage reports
 - 🐳 Docker & Docker Compose for containerization
 - 📦 UV for fast dependency management
 - 🔄 Database migrations with Aerich
+- 📰 Web scraping and article summarization using newspaper3k
+- ⚡ Background task processing for async summary generation
+- 🔍 Code linting with Ruff
 
 ## Prerequisites
 
@@ -50,9 +53,17 @@ The application will be available at `http://localhost:8004` with auto-reload en
 
 ### Running Tests
 
+Run all tests:
 ```bash
 docker-compose exec web pytest
 ```
+
+Run tests with coverage:
+```bash
+docker-compose exec web pytest --cov=app --cov-report=html
+```
+
+Coverage reports are generated in the `htmlcov/` directory.
 
 ### Database Migrations
 
@@ -63,28 +74,49 @@ The application uses Aerich for database migrations. Migrations are automaticall
 ### Health Check
 - `GET /ping` - Returns pong with environment info
 
+### Version
+- `GET /version` - Returns deployment version information (commit SHA, build time, environment)
+
 ### Summaries
-- `POST /summaries/` - Create a new summary
+The summaries feature extracts and summarizes articles from web URLs using web scraping.
+
+- `POST /summaries/` - Create a new summary from a URL
+  - Accepts a URL in the request body
+  - Returns immediately with summary ID (processing happens asynchronously in background)
+  - Payload: `{"url": "https://example.com/article"}`
 - `GET /summaries/` - Get all summaries
 - `GET /summaries/{id}/` - Get a specific summary by ID
+- `PUT /summaries/{id}/` - Update a summary
+- `DELETE /summaries/{id}/` - Delete a summary
 
 ## Project Structure
 
 ```
 fastapi-tdd-docker/
 ├── docker-compose.yml      # Docker Compose configuration
+├── docker-login.sh         # Docker registry login script
+├── docker-push.sh          # Docker image push script
+├── docker-verify.sh        # Docker image verification script
+├── release.sh              # Heroku deployment script
 └── project/
     ├── app/                # Application code
-    │   ├── api/           # API routes
+    │   ├── api/           # API routes (ping, summaries, version)
     │   ├── models/        # Database and Pydantic models
     │   ├── config.py      # Configuration settings
     │   ├── db.py          # Database initialization
-    │   └── main.py        # FastAPI application
+    │   ├── main.py        # FastAPI application
+    │   └── summarizer.py  # Article summarization logic
+    ├── db/                 # Database setup
+    │   ├── Dockerfile     # PostgreSQL Docker image
+    │   └── create.sql     # Database initialization script
     ├── tests/             # Test files
-    ├── migrations/        # Database migrations
+    ├── migrations/        # Database migrations (Aerich)
+    ├── htmlcov/           # HTML coverage reports
     ├── Dockerfile         # Development Docker image
     ├── Dockerfile.prod    # Production Docker image
-    └── pyproject.toml     # Project dependencies
+    ├── entrypoint.sh      # Container entrypoint script
+    ├── pyproject.toml     # Project dependencies and config
+    └── uv.lock            # UV lock file
 ```
 
 ## Production Deployment
@@ -99,11 +131,13 @@ The production image runs with Gunicorn and Uvicorn workers.
 
 ## Environment Variables
 
-- `ENVIRONMENT` - Environment (dev/prod)
-- `TESTING` - Testing mode flag
+- `ENVIRONMENT` - Environment (dev/prod, default: dev)
+- `TESTING` - Testing mode flag (0 or 1, default: 0)
 - `DATABASE_URL` - PostgreSQL connection string
 - `DATABASE_TEST_URL` - Test database connection string
-- `PORT` - Server port (production)
+- `PORT` - Server port (production, default: 8000)
+- `GIT_COMMIT_SHA` - Git commit SHA for version endpoint (optional)
+- `BUILD_TIME` - Build timestamp for version endpoint (optional)
 
 ## License
 
