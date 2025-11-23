@@ -643,15 +643,15 @@ dependencies = [
     { name = "lxml-html-clean" },
     { name = "newspaper3k" },
     { name = "pydantic-settings" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-xdist" },
     { name = "tortoise-orm" },
     { name = "uvicorn" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-xdist" },
     { name = "ruff" },
 ]
 
@@ -665,15 +665,17 @@ requires-dist = [
     { name = "lxml-html-clean", specifier = ">=0.4.3" },
     { name = "newspaper3k", specifier = ">=0.2.8" },
     { name = "pydantic-settings", specifier = "==2.8.1" },
-    { name = "pytest", specifier = "==8.3.5" },
-    { name = "pytest-cov", specifier = "==6.1.1" },
-    { name = "pytest-xdist", specifier = ">=3.8.0" },
     { name = "tortoise-orm", specifier = "==0.25.0" },
     { name = "uvicorn", specifier = "==0.34.1" },
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.14.6" }]
+dev = [
+    { name = "pytest", specifier = "==8.3.5" },
+    { name = "pytest-cov", specifier = "==6.1.1" },
+    { name = "pytest-xdist", specifier = ">=3.8.0" },
+    { name = "ruff", specifier = ">=0.14.6" },
+]
 
 [[package]]
 name = "feedfinder2"
