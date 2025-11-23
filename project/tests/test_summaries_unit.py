@@ -54,16 +54,13 @@ def test_update_summary_invalid_url(test_app):
 def test_create_summary(test_app_with_db, monkeypatch):
     def mock_generate_summary(summary_id, url):
         return None
-        
+
     monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
-    response = test_app_with_db.post(
-        "/summaries/", json={"url": "https://foo.bar"}
-    )
+    response = test_app_with_db.post("/summaries/", json={"url": "https://foo.bar"})
 
     assert response.status_code == 201
     assert response.json()["url"] == "https://foo.bar/"
-
 
 
 def test_read_summary(test_app, monkeypatch):
